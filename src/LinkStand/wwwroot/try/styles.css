@@ -1,3 +1,30 @@
+:root {
+    /* Light mode variables */
+    --BackgroundColorLight: #f4f4f9;
+    --TextColorLight: #000;
+    --ContainerBackgroundLight: #fff;
+    --ContainerBoxShadowLight: rgba(0, 0, 0, 0.1);
+    --InputBackgroundLight: #fff;
+    --InputBorderColorLight: #ccc;
+    --InputTextColorLight: #000;
+    --ButtonBackgroundLight: #007BFF;
+    --ButtonHoverBackgroundLight: #0056b3;
+    --ButtonTextColorLight: #fff;
+
+    /* Dark mode variables */
+    --BackgroundColorDark: #121212;
+    --TextColorDark: #fff;
+    --ContainerBackgroundDark: #1e1e1e;
+    --ContainerBoxShadowDark: rgba(255, 255, 255, 0.1);
+    --InputBackgroundDark: #333;
+    --InputBorderColorDark: #555;
+    --InputTextColorDark: #fff;
+    --ButtonBackgroundDark: #007BFF;
+    --ButtonHoverBackgroundDark: #0056b3;
+    --ButtonTextColorDark: #fff;
+}
+
+/* Base styles */
 body {
     font-family: Arial, sans-serif;
     display: flex;
@@ -5,15 +32,14 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
-    background-color: #f4f4f9;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 .container {
-    background: #fff;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     text-align: center;
+    transition: background-color 0.3s, box-shadow 0.3s;
 }
 
 h1 {
@@ -30,21 +56,21 @@ input[type="url"] {
     width: 300px;
     padding: 10px;
     margin-bottom: 10px;
-    border: 1px solid #ccc;
+    border: 1px solid;
     border-radius: 4px;
+    transition: background-color 0.3s, border-color 0.3s, color 0.3s;
 }
 
 button {
     padding: 10px 20px;
     border: none;
     border-radius: 4px;
-    background-color: #007BFF;
-    color: #fff;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: var(--ButtonHoverBackgroundLight);
 }
 
 #result {
@@ -53,4 +79,60 @@ button:hover {
 
 .hidden {
     display: none;
+}
+
+/* Light mode styles */
+@media (prefers-color-scheme: light) {
+    body {
+        background-color: var(--BackgroundColorLight);
+        color: var(--TextColorLight);
+    }
+
+    .container {
+        background: var(--ContainerBackgroundLight);
+        box-shadow: 0 0 3px var(--ContainerBoxShadowLight);
+    }
+
+    input[type="url"] {
+        background-color: var(--InputBackgroundLight);
+        border-color: var(--InputBorderColorLight);
+        color: var(--InputTextColorLight);
+    }
+
+    button {
+        background-color: var(--ButtonBackgroundLight);
+        color: var(--ButtonTextColorLight);
+    }
+
+    button:hover {
+        background-color: var(--ButtonHoverBackgroundLight);
+    }
+}
+
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: var(--BackgroundColorDark);
+        color: var(--TextColorDark);
+    }
+
+    .container {
+        background: var(--ContainerBackgroundDark);
+        box-shadow: 0 0 3px var(--ContainerBoxShadowDark);
+    }
+
+    input[type="url"] {
+        background-color: var(--InputBackgroundDark);
+        border-color: var(--InputBorderColorDark);
+        color: var(--InputTextColorDark);
+    }
+
+    button {
+        background-color: var(--ButtonBackgroundDark);
+        color: var(--ButtonTextColorDark);
+    }
+
+    button:hover {
+        background-color: var(--ButtonHoverBackgroundDark);
+    }
 }
