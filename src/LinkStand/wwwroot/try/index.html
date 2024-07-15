@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>URL Shortener</h1>
+        <form id="aliasForm">
+            <input type="url" id="urlInput" placeholder="Enter your URL here" required>
+            <button type="submit">Get Link</button>
+        </form>
+        <div id="result" class="hidden">
+            <p>Your Link:</p>
+            <a id="urlAlias" href="#" target="_blank"></a>
+        </div>
+    </div>
+    <script>
+        const host = "http://localhost:8080";
+        document.getElementById('aliasForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const url = document.getElementById('urlInput').value;
+            const response = await fetch(`${host}?url=${url}`, {
+                method: 'POST',
+            });
+            const result = await response.json();
+            const shortenedUrlElement = document.getElementById('urlAlias');
+            shortenedUrlElement.href = `${host}/${result.alias}`;
+            shortenedUrlElement.textContent = `${host}/${result.alias}`;
+            document.getElementById('result').classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>

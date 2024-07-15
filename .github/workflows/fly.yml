@@ -8,7 +8,7 @@ on:
   #pull_request: [ main ]
 jobs:
   deploy:
-    name: Deploy proxy
+    name: Deploy
     runs-on: ubuntu-latest
     defaults:
       run:
