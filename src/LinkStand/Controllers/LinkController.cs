@@ -31,7 +31,7 @@ public class LinkController(IUrlMapService urls) : ControllerBase
   public IActionResult GetOriginalUrl(string alias) => 
     urls.TryGetOriginalUrl(alias, out string? originalUrl) switch
   {
-    true when originalUrl is not null => Redirect(originalUrl),
+    true when originalUrl is not null => Redirect(originalUrl.EnsureHttpPrefix()),
     _ => NotFound()
   };
 }

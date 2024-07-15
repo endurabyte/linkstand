@@ -52,7 +52,7 @@ form {
     align-items: center;
 }
 
-input[type="url"] {
+input {
     width: 300px;
     padding: 10px;
     margin-bottom: 10px;
@@ -93,7 +93,7 @@ button:hover {
         box-shadow: 0 0 3px var(--ContainerBoxShadowLight);
     }
 
-    input[type="url"] {
+    input {
         background-color: var(--InputBackgroundLight);
         border-color: var(--InputBorderColorLight);
         color: var(--InputTextColorLight);
@@ -121,7 +121,7 @@ button:hover {
         box-shadow: 0 0 3px var(--ContainerBoxShadowDark);
     }
 
-    input[type="url"] {
+    input {
         background-color: var(--InputBackgroundDark);
         border-color: var(--InputBorderColorDark);
         color: var(--InputTextColorDark);
