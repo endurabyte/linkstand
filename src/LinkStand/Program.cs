@@ -39,7 +39,7 @@ internal class Program
 
     builder.Host.UseLamar((context, registry) =>
     {
-      registry.For<IUrlMapService>().Use<UrlMapService>().Singleton();
+      registry.For<IAliasService>().Use<AliasService>().Singleton();
     });
 
     var app = builder.Build();

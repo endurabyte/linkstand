@@ -5,7 +5,7 @@ $js = "elm.js"
 $min = "elm.min.js"
 
 # Compile Elm code with optimization
-elm make .\src\Main.elm --optimize --output=$js $args
+elm make "./src/Main.elm" --optimize --output=$js $args
 
 # Minify the JavaScript using UglifyJS
 # npm install -g uglify-js

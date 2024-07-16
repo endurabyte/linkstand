@@ -10,18 +10,22 @@
     --ButtonBackgroundLight: #007BFF;
     --ButtonHoverBackgroundLight: #0056b3;
     --ButtonTextColorLight: #fff;
+    --LinkUnvisitedLight: #007BFF;
+    --LinkVisitedLight: #551A8B;
 
     /* Dark mode variables */
-    --BackgroundColorDark: #121212;
-    --TextColorDark: #fff;
-    --ContainerBackgroundDark: #1e1e1e;
+    --BackgroundColorDark: #1B262C;
+    --TextColorDark: #BBE1FA;
+    --ContainerBackgroundDark: #0F4C75;
     --ContainerBoxShadowDark: rgba(255, 255, 255, 0.1);
-    --InputBackgroundDark: #333;
-    --InputBorderColorDark: #555;
-    --InputTextColorDark: #fff;
-    --ButtonBackgroundDark: #007BFF;
-    --ButtonHoverBackgroundDark: #0056b3;
-    --ButtonTextColorDark: #fff;
+    --InputBackgroundDark: #1a1a1a;
+    --InputBorderColorDark: #293a43;
+    --InputTextColorDark: #BBE1FA;
+    --ButtonBackgroundDark: #3FB832;
+    --ButtonHoverBackgroundDark: #308C26;
+    --ButtonTextColorDark: #BBE1FA;
+    --LinkUnvisitedDark: #BBE1FA;
+    --LinkVisitedDark: #82CFFF;
 }
 
 /* Base styles */
@@ -52,13 +56,18 @@ form {
     align-items: center;
 }
 
-input {
+input, select {
     width: 300px;
     padding: 10px;
+    margin-top: 10px;
     margin-bottom: 10px;
     border: 1px solid;
     border-radius: 4px;
     transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+}
+
+select {
+  width: 150px;
 }
 
 button {
@@ -93,7 +102,7 @@ button:hover {
         box-shadow: 0 0 3px var(--ContainerBoxShadowLight);
     }
 
-    input {
+    input, select {
         background-color: var(--InputBackgroundLight);
         border-color: var(--InputBorderColorLight);
         color: var(--InputTextColorLight);
@@ -106,6 +115,14 @@ button:hover {
 
     button:hover {
         background-color: var(--ButtonHoverBackgroundLight);
+    }
+  
+    a {
+        color: var(--LinkUnvisitedLight);
+    }
+
+    a:visited {
+        color: var(--LinkVisitedLight);
     }
 }
 
@@ -121,7 +138,7 @@ button:hover {
         box-shadow: 0 0 3px var(--ContainerBoxShadowDark);
     }
 
-    input {
+    input, select {
         background-color: var(--InputBackgroundDark);
         border-color: var(--InputBorderColorDark);
         color: var(--InputTextColorDark);
@@ -134,5 +151,13 @@ button:hover {
 
     button:hover {
         background-color: var(--ButtonHoverBackgroundDark);
+    }
+
+    a {
+        color: var(--LinkUnvisitedDark);
+    }
+
+    a:visited {
+        color: var(--LinkVisitedDark);
     }
 }

@@ -1,5 +1,7 @@
 .vs
 *.user
+.idea
+.DS_Store
 bin
 obj
 elm-stuff

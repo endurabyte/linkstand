@@ -7,9 +7,9 @@ import Html.Events exposing (..)
 import Http
 import Json.Decode as Decode exposing (string)
 
---host = "http://localhost:8080/"
+host = "http://localhost:8080/"
 --host = "https://linkstand.fly.dev/"
-host = "https://api.linkstand.net/"
+--host = "https://api.linkstand.net/"
 
 -- MAIN
 
@@ -22,6 +22,7 @@ main =
 type alias Model =
     { urlInput : String
     , aliasUrl : String
+    , aliasType : String
     , isResultVisible : Bool
     }
 
@@ -32,12 +33,13 @@ type alias AliasResponse =
 
 aliasDecoder : Decode.Decoder String
 aliasDecoder =
-  Decode.field "alias" Decode.string
+  Decode.field "id" Decode.string
 
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { urlInput = ""
       , aliasUrl = ""
+      , aliasType = "none" -- short, memorable, none
       , isResultVisible = False
       }
     , Cmd.none
@@ -48,9 +50,9 @@ init _ =
 
 type Msg
     = UpdateUrlInput String
+    | UpdateAliasType String
     | Submit
     | ReceiveResponse (Result Http.Error String)
-
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -58,8 +60,11 @@ update msg model =
         UpdateUrlInput newUrl ->
             ( { model | urlInput = newUrl }, Cmd.none )
 
+        UpdateAliasType newType ->
+            ( { model | aliasType = newType }, Cmd.none )
+
         Submit ->
-          ( model, submitUrl model.urlInput )
+          ( model, submitUrl model.urlInput model.aliasType )
 
         ReceiveResponse result ->
             case result of
@@ -86,6 +91,12 @@ view model =
               , onInput UpdateUrlInput 
               ]
               []
+            , label [ for "aliasType" ] [ text "Type (optional):" ]
+            , select [ onInput UpdateAliasType ]
+                [ option [ value "none" ] [ text "None" ]
+                , option [ value "short" ] [ text "Short" ]
+                , option [ value "memorable" ] [ text "Memorable" ]
+                ]
             , button [ type_ "submit" ] [ text "Get Link" ]
             ]
         , if model.isResultVisible then
@@ -100,10 +111,10 @@ view model =
 
 -- HTTP REQUEST
 
-submitUrl : String -> Cmd Msg
-submitUrl url =
+submitUrl : String -> String -> Cmd Msg
+submitUrl url aliasType =
     let
-        urlToFetch = host ++ "?url=" ++ url
+        urlToFetch = host ++ "?url=" ++ url ++ "&type=" ++ aliasType
     in
     Http.post
         { url = urlToFetch
