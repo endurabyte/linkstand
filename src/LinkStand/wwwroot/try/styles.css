@@ -26,6 +26,8 @@
     --ButtonTextColorDark: #BBE1FA;
     --LinkUnvisitedDark: #BBE1FA;
     --LinkVisitedDark: #82CFFF;
+  
+    --Error: #EE1144;
 }
 
 /* Base styles */
@@ -72,6 +74,8 @@ select {
 
 button {
     padding: 10px 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -88,6 +92,11 @@ button:hover {
 
 .hidden {
     display: none;
+}
+
+.error {
+    color: red;
+    font-weight: bold;
 }
 
 /* Light mode styles */

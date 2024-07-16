@@ -23,24 +23,32 @@ type alias Model =
     { urlInput : String
     , aliasUrl : String
     , aliasType : String
+    , clickCount : Maybe Int
     , isResultVisible : Bool
+    , errorMsg : Maybe String
     }
 
 type alias AliasResponse =
     { alias : String }
 
--- JSON DECODER
+-- JSON DECODERS
 
 aliasDecoder : Decode.Decoder String
 aliasDecoder =
   Decode.field "id" Decode.string
+
+clickCountDecoder : Decode.Decoder Int
+clickCountDecoder =
+  Decode.field "clicks" Decode.int
 
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { urlInput = ""
       , aliasUrl = ""
       , aliasType = "none" -- short, memorable, none
+      , clickCount = Nothing
       , isResultVisible = False
+      , errorMsg = Nothing
       }
     , Cmd.none
     )
@@ -53,15 +61,17 @@ type Msg
     | UpdateAliasType String
     | Submit
     | ReceiveResponse (Result Http.Error String)
+    | FetchClickCount
+    | ReceiveClickCount (Result Http.Error Int)
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UpdateUrlInput newUrl ->
-            ( { model | urlInput = newUrl }, Cmd.none )
+            ( { model | urlInput = newUrl, errorMsg = Nothing }, Cmd.none )
 
         UpdateAliasType newType ->
-            ( { model | aliasType = newType }, Cmd.none )
+            ( { model | aliasType = newType, errorMsg = Nothing }, Cmd.none )
 
         Submit ->
           ( model, submitUrl model.urlInput model.aliasType )
@@ -69,10 +79,24 @@ update msg model =
         ReceiveResponse result ->
             case result of
                 Ok alias ->
-                    ( { model | aliasUrl = alias, isResultVisible = True }, Cmd.none )
+                    ( { model | aliasUrl = alias, isResultVisible = True, errorMsg = Nothing}, Cmd.none )
+
+                Err (Http.BadStatus 409) ->
+                    ( { model | errorMsg = Just "Link already exists" }, Cmd.none )
 
                 Err _ ->
-                    ( model, Cmd.none )
+                    ( { model | errorMsg = Just "Failed to create link." }, Cmd.none )
+
+        FetchClickCount ->
+            ( model, fetchClickCount model.aliasUrl )
+
+        ReceiveClickCount result ->
+            case result of
+                Ok clicks ->
+                    ( { model | clickCount = Just clicks, errorMsg = Nothing }, Cmd.none )
+
+                Err _ ->
+                    ( { model | errorMsg = Just "Failed to get click count." }, Cmd.none )
 
 
 -- VIEW
@@ -99,13 +123,27 @@ view model =
                 ]
             , button [ type_ "submit" ] [ text "Get Link" ]
             ]
+
         , if model.isResultVisible then
             div [ id "result" ]
                 [ p [] [ text "Your Link:" ]
                 , a [ href (host ++ model.aliasUrl), target "_blank", rel "noopener noreferrer" ] [ text model.aliasUrl ]
+                , p [] []
+                , button [ onClick FetchClickCount ] [ text "Get Click Count" ]
+                , case model.clickCount of
+                    Just count ->
+                        p [] [ text ("Click count: " ++ String.fromInt count) ]
+
+                    Nothing ->
+                        text ""
                 ]
           else
             text ""
+        , case model.errorMsg of
+            Just msg ->
+                p [ class "error" ] [ text msg ]
+            Nothing ->
+                text ""
         ]
 
 
@@ -120,6 +158,13 @@ submitUrl url aliasType =
         { url = urlToFetch
         , body = Http.emptyBody
         , expect = Http.expectJson ReceiveResponse aliasDecoder
+        }
+
+fetchClickCount : String -> Cmd Msg
+fetchClickCount aliasId =
+    Http.get
+        { url = host ++ "clicks?id=" ++ aliasId
+        , expect = Http.expectJson ReceiveClickCount clickCountDecoder
         }
 
 -- SUBSCRIPTIONS
