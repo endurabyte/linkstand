@@ -7,9 +7,9 @@ import Html.Events exposing (..)
 import Http
 import Json.Decode as Decode exposing (string)
 
-host = "http://localhost:8080/"
+--host = "http://localhost:8080/"
 --host = "https://linkstand.fly.dev/"
---host = "https://api.linkstand.net/"
+host = "https://api.linkstand.net/"
 
 -- MAIN
 
