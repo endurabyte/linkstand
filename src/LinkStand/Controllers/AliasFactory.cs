@@ -9,19 +9,19 @@ public static class AliasFactory
 
   public static Alias Create(string url, AliasType type) => new(GetAliasId(url, type), url, type);
   
-  private static string GetAliasId(string url, AliasType type) => type switch
+  private static AliasId GetAliasId(string url, AliasType type) => type switch
   {
-    AliasType.None => url,
+    AliasType.None => AliasId.From(url),
     AliasType.Memorable => GetMemorableUrl(),
     _ => GetShortUrl(),
   };
 
-  private static string GetShortUrl() => $"{Guid.NewGuid()}".Sha1()[..7];
+  private static AliasId GetShortUrl() => AliasId.From($"{Guid.NewGuid()}".Sha1()[..7]);
 
-  private static string GetMemorableUrl() => 
+  private static AliasId GetMemorableUrl() => AliasId.From(
       $"{Nouns[Random.Shared.Next(Nouns.Length)]}-"
     + $"{Verbs[Random.Shared.Next(Verbs.Length)]}-"
     + $"{Adjectives[Random.Shared.Next(Adjectives.Length)]}-"
     + $"{Nouns[Random.Shared.Next(Nouns.Length)]}-"
-    + $"{Adverbs[Random.Shared.Next(Adverbs.Length)]}";
+    + $"{Adverbs[Random.Shared.Next(Adverbs.Length)]}");
 }
