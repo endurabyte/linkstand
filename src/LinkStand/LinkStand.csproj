@@ -10,11 +10,25 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lamar" Version="12.0.0" />
-    <PackageReference Include="Lamar.Microsoft.DependencyInjection" Version="12.0.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.6" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="Lamar" Version="13.0.4" />
+    <PackageReference Include="Lamar.Microsoft.DependencyInjection" Version="13.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.7">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     <PackageReference Include="Vogen" Version="4.0.15" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="supabase.crt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="LinkStand.Extensions" />
+  </ItemGroup>
 </Project>

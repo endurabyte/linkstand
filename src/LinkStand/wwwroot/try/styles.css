@@ -27,7 +27,8 @@
     --LinkUnvisitedDark: #BBE1FA;
     --LinkVisitedDark: #82CFFF;
   
-    --Error: #EE1144;
+    /* Semantic Palette */
+    --Destructive: #EE1144;
 }
 
 /* Base styles */
@@ -95,7 +96,7 @@ button:hover {
 }
 
 .error {
-    color: red;
+    color: var(--Destructive);
     font-weight: bold;
 }
 

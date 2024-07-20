@@ -1,4 +1,4 @@
-﻿namespace LinkStand.Controllers;
+﻿namespace LinkStand.Extensions;
 
 public static class RequestExtensions
 {

@@ -1,44 +1,55 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using LinkStand.Contracts;
+using LinkStand.Model;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LinkStand.Controllers;
-
-public record Alias(AliasId Id, string Target, AliasType Type);
-public record AliasEvent(AliasId AliasId, string Ip, DateTime Timestamp);
 
 [ApiController]
 [Route("/")]
 public class AliasController(IAliasService aliases) : ControllerBase
 {
   [HttpPost]
-  public IActionResult CreateAlias([FromQuery] string url, [FromQuery] AliasType type = AliasType.Short)
+  public async Task<IActionResult> CreateAlias([FromQuery] string url, [FromQuery] AliasType type = AliasType.Short)
   {
     Alias alias = AliasFactory.Create(url, type);
+    Alias? existing = await aliases.GetAsync(alias.Id).OnAnyThread();
 
-    return aliases.TryAdd(alias) switch
+    return existing switch
     {
-      false => Conflict(),
-      _ => Created($"/{alias.Id}", new { id = alias.Id }),
+      not null => Conflict(),
+      _ => await Created($"/{alias.Id}", new { id = alias.Id })
+        .Chain(async () => await aliases.AddOrUpdateAsync(alias).OnAnyThread())
+        .OnAnyThread(),
     };
   }
 
   [HttpGet("{*id}")]
-  public IActionResult GetAlias(AliasId id) =>
-    aliases.TryGetAlias(id, out Alias? alias) switch
+  public async Task<IActionResult> GetAliasAsync(AliasId id)
+  {
+    Alias? alias = await aliases.GetAsync(id).OnAnyThread();
+
+    return alias switch
     {
-      true when alias is not null => Redirect(alias.Target.EnsureHttpPrefix().Chain(_ => AddEvent(id))),
-      _ => NotFound()
+      null => NotFound(),
+      _ => await Redirect(alias.Target.EnsureHttpPrefix())
+        .Chain(async () => await AddEventAsync(alias).OnAnyThread())
+        .OnAnyThread(),
     };
+  }
 
   [HttpGet("clicks")]
-  public IActionResult GetClicks([FromQuery] AliasId id) =>
-    aliases.TryGetEvents(id, out List<AliasEvent>? events) switch
-    {
-      true when events is not null => Ok(new { clicks = events.Count }),
-      _ => NotFound(),
-    };
-
-  private void AddEvent(AliasId id)
+  public async Task<IActionResult> GetClicks([FromQuery] AliasId id)
   {
-    aliases.Add(new AliasEvent(id, Request.GetIp(), DateTime.Now));
+    Alias? alias = await aliases.GetAsync(id).OnAnyThread();
+    List<AliasEvent> events = await aliases.GetAllAliasEventsAsync(id).OnAnyThread();
+
+    return alias switch
+    {
+      null => NotFound(),
+      _ => Ok(new { clicks = events.Count }),
+    };
   }
+
+  private async Task<DataAction> AddEventAsync(Alias alias) => 
+    await aliases.AddOrUpdateAsync(new AliasEvent(AliasEventId.From($"{Guid.NewGuid()}"), alias.Id, alias, Request.GetIp(), DateTime.UtcNow));
 }

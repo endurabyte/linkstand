@@ -3,9 +3,11 @@ on:
   push:
     branches: [ main ]
     paths:
-      - '**'
+      - src
       - '.github/workflows/fly.yml'
-  #pull_request: [ main ]
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [ main ]
 jobs:
   deploy:
     name: Deploy
