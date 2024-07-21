@@ -45,7 +45,7 @@ jobs:
         with:
           name: dist
           path: |
-            './src/App/dist'
+            './src/App/dist/**'
           if-no-files-found: error 
 
   deploy:
