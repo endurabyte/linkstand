@@ -6,6 +6,7 @@ on:
       - '**'
     paths:
       - 'src/Api/**'
+      - '!.github/workflows/**'
       - '.github/workflows/api.yml'
 
   pull_request:

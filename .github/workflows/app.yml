@@ -31,15 +31,10 @@ jobs:
           elm-version: 0.19.1
 
       - name: Build
-        run: |
-         .\make.ps1
-         ls -R
+        run: .\make.ps1
         shell: pwsh
         working-directory: 'src/App'
         
-      - name: List files
-        run: ls -R
-
       - name: Upload aritfacts
         uses: actions/upload-artifact@v4
         with:
