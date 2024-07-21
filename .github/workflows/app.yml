@@ -44,8 +44,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: |
-            './src/App/dist/**'
+          path: '/src/App/dist/'
           if-no-files-found: error 
 
   deploy:
