@@ -1,0 +1,6 @@
+.vs
+.idea
+.DS_Store
+dist
+elm-stuff
+elm.js

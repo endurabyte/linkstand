@@ -1,0 +1,77 @@
+name: Deploy App
+on: 
+  push:
+    branches: [ main ]
+    tags-ignore:
+      - '**'
+    paths:
+      - 'src/App/**'
+      - '.github/workflows/app.yml'
+
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [ main ]
+    paths:
+      - 'src/App/**'
+      - '!.github/workflows/**'
+      - '.github/workflows/app.yml'
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Setup Elm
+        uses: jorelali/setup-elm@v6
+        with:
+          elm-version: 0.19.1
+
+      - name: Build
+        run: .\make.ps1
+        shell: pwsh
+        working-directory: 'src/App'
+        
+      - name: Upload aritfacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: 'src/App/dist/'
+          if-no-files-found: error 
+
+  deploy:
+    needs: [ build ]
+    # Only deploy for pushes to main
+    #if: github.ref_name == 'main'
+
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Push to S3
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --follow-symlinks
+        env:
+          AWS_S3_BUCKET: ${{ secrets.LINKSTAND_AWS_S3_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.LINKSTAND_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.LINKSTAND_AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: 'us-east-1'       # optional: defaults to us-east-1
+          SOURCE_DIR: dist/  # optional: defaults to entire repository
+
+      - name: Invalidate Cloudfront cache
+        uses: chetan/invalidate-cloudfront-action@master
+        env:
+          DISTRIBUTION: ${{ secrets.LINKSTAND_AWS_CLOUDFRONT_DISTRIBUTION_ID }}
+          PATHS: '/*'
+          AWS_REGION: 'us-east-1'
+          AWS_ACCESS_KEY_ID: ${{ secrets.LINKSTAND_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.LINKSTAND_AWS_SECRET_ACCESS_KEY }}

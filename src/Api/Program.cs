@@ -64,7 +64,7 @@ internal class Program
       {
         options.AddPolicy("ProductionPolicy", builder =>
         {
-          builder.WithOrigins("http://localhost:8080", "https://linkstand.net");
+          builder.WithOrigins("http://localhost:8080", "https://linkstand.net", "https://www.linkstand.net");
           builder.WithMethods("GET", "POST");
         });
       });

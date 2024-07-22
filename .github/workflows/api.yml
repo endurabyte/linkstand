@@ -1,13 +1,21 @@
-name: Deploy API to Fly
+name: Deploy API
 on: 
   push:
     branches: [ main ]
+    tags-ignore:
+      - '**'
     paths:
-      - src
-      - '.github/workflows/fly.yml'
+      - 'src/Api/**'
+      - '!.github/workflows/**'
+      - '.github/workflows/api.yml'
+
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     branches: [ main ]
+    paths:
+      - 'src/Api/**'
+      - '.github/workflows/api.yml'
+
 jobs:
   test:
     name: Test

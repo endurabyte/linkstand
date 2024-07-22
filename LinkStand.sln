@@ -29,6 +29,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{95DE218C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api.Tests", "tests\Api.Tests\Api.Tests.csproj", "{85784675-942D-4BBD-A392-911D9DEB32F6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "App", "App", "{2666264A-B3E6-4167-8E50-4B2DB5B9E859}"
+	ProjectSection(SolutionItems) = preProject
+		src\App\elm.json = src\App\elm.json
+		src\App\src\index.html = src\App\src\index.html
+		src\App\src\Main.elm = src\App\src\Main.elm
+		src\App\make.ps1 = src\App\make.ps1
+		src\App\src\styles.css = src\App\src\styles.css
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +60,7 @@ Global
 		{23604A4C-A805-4270-948E-F3E074EFE889} = {D720306C-75F4-4883-97D4-022CFBDC6706}
 		{1F8E4A33-0435-452D-9E3E-29EB62FEF9AD} = {AA27E740-71A3-4BA0-9E7F-13D1247E25D2}
 		{85784675-942D-4BBD-A392-911D9DEB32F6} = {95DE218C-E27A-4A6D-92F7-C8DF098C04F7}
+		{2666264A-B3E6-4167-8E50-4B2DB5B9E859} = {D720306C-75F4-4883-97D4-022CFBDC6706}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {344CB8BC-AF70-4868-907B-BEB831DE3726}
