@@ -1,11 +1,12 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Lamar;
 using Lamar.Microsoft.DependencyInjection;
 using Api.Contracts;
 using Api.Data;
 using Api.Model;
 using Microsoft.EntityFrameworkCore;
+
+namespace Api;
 
 internal class Program
 {
@@ -49,11 +50,11 @@ internal class Program
     {
       builder.Services.AddCors(options =>
       {
-        options.AddPolicy("DebugPolicy", builder =>
+        options.AddPolicy("DebugPolicy", pb =>
         {
-          builder.AllowAnyOrigin();
-          builder.AllowAnyMethod();
-          builder.AllowAnyHeader();
+          pb.AllowAnyOrigin();
+          pb.AllowAnyMethod();
+          pb.AllowAnyHeader();
         });
       });
     }
@@ -62,15 +63,15 @@ internal class Program
       // Allow localhost 8080 and linkstand.net
       builder.Services.AddCors(options =>
       {
-        options.AddPolicy("ProductionPolicy", builder =>
+        options.AddPolicy("ProductionPolicy", pb =>
         {
-          builder.WithOrigins("http://localhost:8080", "https://linkstand.net", "https://www.linkstand.net");
-          builder.WithMethods("GET", "POST");
+          pb.WithOrigins("http://localhost:8080", "https://linkstand.net", "https://www.linkstand.net");
+          pb.WithMethods("GET", "POST");
         });
       });
     }
 
-    builder.Host.UseLamar((context, registry) =>
+    builder.Host.UseLamar((_, registry) =>
     {
       registry.For<IAliasService>().Use<AliasService>();
       registry.For<IAliasRepo>().Use<AliasRepo>();
@@ -87,6 +88,7 @@ internal class Program
         c.InjectStylesheet("/swagger-ui/SwaggerDark.css");
       });
 
+      app.UseFileServer();
       app.UseDeveloperExceptionPage();
       app.UseCors("DebugPolicy");
     }
@@ -101,9 +103,8 @@ internal class Program
       await db.InitAsync().OnAnyThread();
     }
 
-    app.UseFileServer();
     app.UseRouting();
     app.MapControllers();
-    app.Run();
+    await app.RunAsync();
   }
 }
