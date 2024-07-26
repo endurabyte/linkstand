@@ -49,6 +49,19 @@ public class AliasController(IAliasService aliases) : ControllerBase
       _ => Ok(new { clicks = events.Count }),
     };
   }
+  
+  [HttpGet("events")]
+  public async Task<IActionResult> GetEvents([FromQuery] AliasId id)
+  {
+    Alias? alias = await aliases.GetAsync(id).OnAnyThread();
+    List<AliasEvent> events = await aliases.GetAllAliasEventsAsync(id).OnAnyThread();
+
+    return alias switch
+    {
+      null => NotFound(),
+      _ => Ok(new { events }),
+    };
+  }
 
   private async Task<DataAction> AddEventAsync(Alias alias) => 
     await aliases.AddOrUpdateAsync(new AliasEvent(AliasEventId.From($"{Guid.NewGuid()}"), alias.Id, alias, Request.GetIp(), DateTime.UtcNow));

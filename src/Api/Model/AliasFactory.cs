@@ -1,5 +1,3 @@
-using Api.Extensions;
-
 namespace Api.Model;
 
 public static class AliasFactory
