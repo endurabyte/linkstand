@@ -1,21 +1,33 @@
 module Main exposing (..)
 
 import Browser
-import Browser.Navigation
+import Browser.Navigation as Nav
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Html.Events
 import Http
 import Json.Decode as Decode exposing (string)
+import Url
+import Url.Parser as Parser exposing (Parser, custom, oneOf, s, top)
 
---host = "http://localhost:8080/"
+import Page.About
+
+host = "http://localhost:8080/"
 --host = "https://linkstand.fly.dev/"
-host = "https://api.linkstand.net/"
+--host = "https://api.linkstand.net/"
 
 -- MAIN
 
+main : Program () Model Msg
 main =
-    Browser.element { init = init, update = update, view = view, subscriptions = subscriptions }
+    Browser.application 
+      { init = init
+      , update = update
+      , view = view
+      , subscriptions = \_ -> Sub.none
+      , onUrlChange = UrlChanged
+      , onUrlRequest = LinkClicked
+      }
 
 
 -- MODEL
@@ -26,10 +38,17 @@ type alias Model =
     , aliasType : String
     , isResultVisible : Bool
     , errorMsg : Maybe String
+    , key : Nav.Key
+    , url : Url.Url
+    , page : Page
     }
 
 type alias AliasResponse =
     { alias : String }
+
+type Page
+  = Main
+  | About Page.About.Model
 
 -- JSON DECODERS
 
@@ -37,16 +56,21 @@ aliasDecoder : Decode.Decoder String
 aliasDecoder =
   Decode.field "id" Decode.string
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { urlInput = ""
-      , aliasUrl = ""
-      , aliasType = "none" -- short, memorable, none
-      , isResultVisible = False
-      , errorMsg = Nothing
-      }
-    , Cmd.none
-    )
+init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url key =
+    let
+        initialModel =
+            { urlInput = ""
+            , aliasUrl = ""
+            , aliasType = "none" -- short, memorable, none
+            , isResultVisible = False
+            , errorMsg = Nothing
+            , key = key
+            , url = url
+            , page = Main
+            }
+    in
+    ( stepUrl url initialModel )
 
 
 -- UPDATE
@@ -57,6 +81,8 @@ type Msg
     | Submit
     | ReceiveResponse (Result Http.Error String)
     | NavigateToManage
+    | UrlChanged Url.Url
+    | LinkClicked Browser.UrlRequest
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -84,46 +110,71 @@ update msg model =
         NavigateToManage ->
             ( model, navigateTo ("manage.html?id=" ++ model.aliasUrl) )
 
+        LinkClicked urlRequest ->
+            case urlRequest of
+                Browser.Internal url ->
+                    ( model, Nav.pushUrl model.key (Url.toString url) )
+
+                Browser.External href ->
+                    ( model, Nav.load href )
+
+        UrlChanged url ->
+            stepUrl url model
+
 -- VIEW
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
-    div [ class "container" ]
-        [ h1 [] [ text "Link Creator" ]
-        , Html.form [ onSubmit Submit ]
-            [ input 
-              [ type_ "text"
-              , placeholder "https://www.example.com/"
-              , required True
-              , pattern "(https?:\\/\\/)?(www\\.)?[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}(/\\S*)?"
-              , value model.urlInput
-              , onInput UpdateUrlInput 
-              ]
-              []
-            , label [ for "aliasType" ] [ text "Type (optional):" ]
-            , select [ onInput UpdateAliasType ]
-                [ option [ value "none" ] [ text "None" ]
-                , option [ value "short" ] [ text "Short" ]
-                , option [ value "memorable" ] [ text "Memorable" ]
-                ]
-            , button [ type_ "submit" ] [ text "Get Link" ]
-            ]
+  case model.page of 
+    About about ->
+      Page.About.view about
 
-        , if model.isResultVisible then
-            div [ id "result" ]
-                [ p [] [ text "Your Link:" ]
-                , a [ href (host ++ model.aliasUrl), target "_blank", rel "noopener noreferrer" ] [ text model.aliasUrl ]
-                , p [] []
-                , button [ onClick NavigateToManage ] [ text "Manage" ]
-                ]
-          else
-            text ""
-        , case model.errorMsg of
-            Just msg ->
-                p [ class "error" ] [ text msg ]
-            Nothing ->
-                text ""
+    Main -> 
+      getBody model
+
+getBody : Model -> Browser.Document Msg
+getBody model = 
+  { title = "LinkStand | Create a Link"
+  , body = 
+    [ div [ class "container" ]
+      [ h1 [] [ text "Link Creator" ]
+      , Html.form [ Html.Events.onSubmit Submit ]
+        [ input 
+          [ type_ "text"
+          , placeholder "https://www.example.com/"
+          , required True
+          , pattern "(https?:\\/\\/)?(www\\.)?[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}(/\\S*)?"
+          , value model.urlInput
+          , Html.Events.onInput UpdateUrlInput 
+          ]
+          []
+        , label [ for "aliasType" ] [ text "Type (optional):" ]
+        , select [ Html.Events.onInput UpdateAliasType ]
+          [ option [ value "none" ] [ text "None" ]
+          , option [ value "short" ] [ text "Short" ]
+          , option [ value "memorable" ] [ text "Memorable" ]
+          ]
+        , button [ class "is-outlined", type_ "submit" ] [ text "Get Link" ]
         ]
+
+      , if model.isResultVisible then
+        div [ id "result" ]
+          [ p [] [ text "Your Link:" ]
+          , a [ href (host ++ model.aliasUrl), target "_blank", rel "noopener noreferrer" ] [ text model.aliasUrl ]
+          , p [] []
+          , button [ Html.Events.onClick NavigateToManage ] [ text "Manage" ]
+          ]
+        else
+          text ""
+      , case model.errorMsg of
+        Just msg ->
+          p [ class "error" ] [ text msg ]
+        Nothing ->
+          text ""
+      , a [ href "/about" ] [ text "About" ]
+      ]
+    ]
+  }
 
 
 -- HTTP REQUEST
@@ -141,10 +192,44 @@ submitUrl url aliasType =
 
 navigateTo : String -> Cmd Msg
 navigateTo url =
-    Browser.Navigation.load url
+    Nav.load url
 
--- SUBSCRIPTIONS
 
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
+-- ROUTER
+
+stepUrl : Url.Url -> Model -> (Model, Cmd Msg)
+stepUrl url model =
+  let
+    parser =
+      oneOf
+        [ route top
+          (stepMain model)
+
+        , route (Parser.s "about")
+          (stepAbout model Page.About.init)
+        ]
+  in
+  case Parser.parse parser url of
+    Just answer ->
+      answer
+
+    Nothing ->
+      ( model, Cmd.none )
+
+
+stepMain : Model -> ( Model, Cmd Msg ) 
+stepMain model = 
+  ( { model | page = Main }, Cmd.none )
+
+stepAbout : Model -> ( Page.About.Model, Cmd Page.About.Msg ) -> ( Model, Cmd Msg )
+stepAbout model (html, cmds) =
+  ( { model | page = About html }, Cmd.none)
+
+route : Parser a b -> a -> Parser (b -> c) c
+route parser handler =
+  Parser.map handler parser
+
+
+about_ : Parser (String -> a) a
+about_ =
+  custom "about" Just

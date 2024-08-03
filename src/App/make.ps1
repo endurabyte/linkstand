@@ -6,11 +6,12 @@ npm install -g uglify-js uglifycss
 $compression = "pure_funcs=[F2,F3,F4,F5,F6,F7,F8,F9,A2,A3,A4,A5,A6,A7,A8,A9],pure_getters,keep_fargs=false,unsafe_comps,unsafe"
 
 # Create the dist directory
-rm -rf ./dist
-mkdir dist
+Remove-Item -Recurse -Force ./dist/*
+New-Item -ItemType Directory -Path ./dist -Force
+New-Item -ItemType Directory -Path ./dist/css -Force
 
 # Minify CSS
-uglifycss "src/styles.css" --output "dist/styles.css"
+uglifycss "css/styles.css" --output "dist/css/styles.css"
 
 # Process each subdirectory in the src directory
 Get-ChildItem -Path "src" -Directory | ForEach-Object {
@@ -27,7 +28,8 @@ Get-ChildItem -Path "src" -Directory | ForEach-Object {
     $distHtml = "../../dist/$nameLower.html"
 
     # Compile Elm code with optimization
-    elm make $elmFile --optimize --output=$js $args
+    #elm make $elmFile --optimize --output=$js $args
+    elm make $elmFile --output=$js $args
 
     # Minify the JavaScript using UglifyJS
     uglifyjs $js --compress $compression | uglifyjs --mangle --output $min

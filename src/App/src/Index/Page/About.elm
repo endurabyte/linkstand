@@ -1,0 +1,53 @@
+module Page.About exposing
+  ( Model
+  , init
+  , Msg
+  , update
+  , view
+  )
+
+import Browser
+import Html exposing (..)
+import Html.Attributes exposing (..)
+
+
+-- MODEL
+
+type Status
+  = Ok
+
+type alias Model =
+  { status : Status }
+
+init : ( Model, Cmd msg )
+init  =
+  ( Model Ok, Cmd.none )
+
+
+-- UPDATE
+
+type Msg
+  = Loaded
+
+update : Msg -> Model -> ( Model, Cmd msg )
+update msg model =
+  case msg of
+    Loaded ->
+      ( model, Cmd.none )
+
+
+-- VIEW
+
+view : Model -> Browser.Document msg
+view model =
+  Debug.log("about: view")
+  { title = "LinkStand | About"
+  , body = 
+    [ div [ class "container" ]
+      [ h1 [] [ text "About" ]
+      , p [] [ text "LinkStand is a web service to share URLs and track their use." ]
+      , a [ class "d-block mb-4", href "https://github.com/endurabyte/linkstand/" ] [ text "Source Code" ]
+      , a [ href "/" ] [ text "Back" ]
+      ]
+    ]
+  }
