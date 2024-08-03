@@ -46,8 +46,8 @@ view model =
     [ div [ class "container" ]
       [ h1 [] [ text "About" ]
       , p [] [ text "LinkStand is a web service to share URLs and track their use." ]
-      , a [ class "d-block mb-4", href "https://github.com/endurabyte/linkstand/" ] [ text "Source Code" ]
-      , a [ href "/" ] [ text "Back" ]
+      , a [ href "https://github.com/endurabyte/linkstand/" ] [ text "Source Code" ]
+      , a [ class "d-block mt-4", href "/" ] [ text "Back" ]
       ]
     ]
   }

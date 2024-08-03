@@ -42,6 +42,10 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
+.d-flex {
+  display: flex;
+}
+
 .d-block {
   display: block;
 }

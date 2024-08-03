@@ -154,7 +154,7 @@ getBody model =
           , option [ value "short" ] [ text "Short" ]
           , option [ value "memorable" ] [ text "Memorable" ]
           ]
-        , button [ class "is-outlined", type_ "submit" ] [ text "Get Link" ]
+        , button [ type_ "submit" ] [ text "Get Link" ]
         ]
 
       , if model.isResultVisible then
@@ -171,7 +171,7 @@ getBody model =
           p [ class "error" ] [ text msg ]
         Nothing ->
           text ""
-      , a [ href "/about" ] [ text "About" ]
+      , a [ class "d-block mt-4", href "/about" ] [ text "About" ]
       ]
     ]
   }
