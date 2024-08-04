@@ -6,7 +6,7 @@ npm install -g uglify-js uglifycss
 $compression = "pure_funcs=[F2,F3,F4,F5,F6,F7,F8,F9,A2,A3,A4,A5,A6,A7,A8,A9],pure_getters,keep_fargs=false,unsafe_comps,unsafe"
 
 # Create the dist directory
-Remove-Item -Recurse -Force ./dist/*
+Remove-Item -Recurse -Force -ErrorAction SilentlyContinue ./dist/*
 New-Item -ItemType Directory -Path ./dist -Force
 New-Item -ItemType Directory -Path ./dist/css -Force
 
