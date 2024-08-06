@@ -5,4 +5,4 @@ import Debug
 
 log : String -> a -> a
 log message value =
-    value
+    Debug.log message value
