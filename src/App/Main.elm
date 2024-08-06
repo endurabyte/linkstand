@@ -16,17 +16,10 @@ import Url.Parser.Query as Query
 
 
 
-host =
-    --"https://linkstand.fly.dev/"
-    --"https://api.linkstand.net/"
-    "http://localhost:8080/"
-
-
-
 -- MAIN
 
 
-main : Program () Model Msg
+main : Program Decode.Value Model Msg
 main =
     Browser.application
         { init = init
@@ -43,7 +36,8 @@ main =
 
 
 type alias Model =
-    { urlInput : String
+    { config : Config
+    , urlInput : String
     , aliasUrl : String
     , aliasType : String
     , isResultVisible : Bool
@@ -53,6 +47,8 @@ type alias Model =
     , page : Page
     }
 
+type alias Config = 
+  { host : String }
 
 type alias AliasResponse =
     { alias : String }
@@ -63,8 +59,6 @@ type Page
     | About Page.About.Model
     | Manage Page.Manage.Model
 
-
-
 -- JSON DECODERS
 
 
@@ -72,12 +66,20 @@ aliasDecoder : Decode.Decoder String
 aliasDecoder =
     Decode.field "id" Decode.string
 
+configDecoder : Decode.Decoder Config
+configDecoder =
+    Decode.map Config
+        (Decode.field "host" Decode.string)
 
-init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init : Decode.Value -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     let
         initialModel =
-            { urlInput = ""
+            { config = 
+                case Decode.decodeValue configDecoder flags of
+                  Ok config -> config
+                  Err _ -> { host = "http://err-no-host.local" }
+            , urlInput = ""
             , aliasUrl = ""
             , aliasType = "none" -- short, memorable, none
             , isResultVisible = False
@@ -119,7 +121,7 @@ update msg model =
             ( { model | aliasType = newType, errorMsg = Nothing }, Cmd.none )
 
         Submit ->
-            ( model, submitUrl model.urlInput model.aliasType )
+            ( model, submitUrl model.config.host model.urlInput model.aliasType )
 
         ReceiveResponse result ->
             case result of
@@ -217,7 +219,7 @@ getBody model =
             , if model.isResultVisible then
                 div [ id "result" ]
                     [ p [] [ text "Your Link:" ]
-                    , a [ href (host ++ model.aliasUrl), target "_blank", rel "noopener noreferrer" ] [ text model.aliasUrl ]
+                    , a [ href (model.config.host ++ model.aliasUrl), target "_blank", rel "noopener noreferrer" ] [ text model.aliasUrl ]
                     , p [] []
                     , button [ Html.Events.onClick NavigateToManage ] [ text "Manage" ]
                     ]
@@ -240,8 +242,8 @@ getBody model =
 -- HTTP REQUEST
 
 
-submitUrl : String -> String -> Cmd Msg
-submitUrl url aliasType =
+submitUrl : String -> String -> String -> Cmd Msg
+submitUrl host url aliasType =
     let
         urlToFetch =
             host ++ "?url=" ++ url ++ "&type=" ++ aliasType
@@ -278,7 +280,7 @@ stepUrl url model =
                     (\maybeId ->
                         let
                             manageInit =
-                                Page.Manage.init url model.key
+                                Page.Manage.init model.config.host url model.key
                         in
                         stepManage model manageInit
                     )

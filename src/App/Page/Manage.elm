@@ -20,18 +20,12 @@ import Url.Parser.Query
 
 
 
-host =
-    --"https://linkstand.fly.dev/"
-    --"https://api.linkstand.net/"
-    "http://localhost:8080/"
-
-
-
 -- MODEL
 
 
 type alias Model =
-    { linkId : String
+    { host : String
+    , linkId : String
     , clickCount : Maybe Int
     , events : List Event
     , errorMsg : Maybe String
@@ -64,9 +58,10 @@ eventDecoder =
         (Decode.field "timestamp" string)
 
 
-init : Url -> Nav.Key -> ( Model, Cmd Msg )
-init url key =
-    ( { linkId =
+init : String -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init host url key =
+    ( { host = host
+      , linkId =
             case extractSearchArgument "id" url of
                 Just linkId ->
                     linkId
@@ -106,7 +101,7 @@ update msg model =
             ( { model | linkId = newLinkId, errorMsg = Nothing }, Cmd.none )
 
         FetchStats ->
-            ( model, Cmd.batch [ fetchClickCount model.linkId, fetchEvents model.linkId ] )
+            ( model, Cmd.batch [ fetchClickCount model.host model.linkId, fetchEvents model.host model.linkId ] )
 
         ReceiveClickCount result ->
             case result of
@@ -197,16 +192,16 @@ eventRow event =
 -- HTTP REQUEST
 
 
-fetchClickCount : String -> Cmd Msg
-fetchClickCount linkId =
+fetchClickCount : String -> String -> Cmd Msg
+fetchClickCount host linkId =
         Http.get
         { url = host ++ "clicks?id=" ++ linkId
         , expect = Http.expectJson ReceiveClickCount clickCountDecoder
         }
 
 
-fetchEvents : String -> Cmd Msg
-fetchEvents linkId =
+fetchEvents : String -> String -> Cmd Msg
+fetchEvents host linkId =
     Http.get
         { url = host ++ "events?id=" ++ linkId
         , expect = Http.expectJson ReceiveEvents (Decode.field "events" (Decode.list eventDecoder))
