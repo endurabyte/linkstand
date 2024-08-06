@@ -1,10 +1,10 @@
 module Page.Manage exposing
-  ( Model
-  , init
-  , Msg
-  , update
-  , view
-  )
+    ( Model
+    , Msg
+    , init
+    , update
+    , view
+    )
 
 import Browser
 import Browser.Navigation as Nav
@@ -16,14 +16,21 @@ import Json.Decode as Decode exposing (string)
 import Url exposing (Url)
 import Url.Parser exposing (Parser, map)
 import Url.Parser.Query
-import Dict exposing (Dict)
+
+
 
 --host = "http://localhost:8080/"
 --host = "https://linkstand.fly.dev/"
-host = "https://api.linkstand.net/"
+
+
+host : String
+host =
+    "https://api.linkstand.net/"
+
 
 
 -- MODEL
+
 
 type alias Model =
     { linkId : String
@@ -32,6 +39,7 @@ type alias Model =
     , errorMsg : Maybe String
     }
 
+
 type alias Event =
     { id : String
     , aliasId : String
@@ -39,11 +47,15 @@ type alias Event =
     , timestamp : String
     }
 
+
+
 -- JSON DECODERS
+
 
 clickCountDecoder : Decode.Decoder Int
 clickCountDecoder =
-  Decode.field "clicks" Decode.int
+    Decode.field "clicks" Decode.int
+
 
 eventDecoder : Decode.Decoder Event
 eventDecoder =
@@ -53,12 +65,16 @@ eventDecoder =
         (Decode.field "ip" string)
         (Decode.field "timestamp" string)
 
+
 init : Url -> Nav.Key -> ( Model, Cmd Msg )
 init url key =
-    ( { linkId = 
-          case extractSearchArgument "id" url of
-            Just linkId -> linkId
-            Nothing -> ""
+    ( { linkId =
+            case extractSearchArgument "id" url of
+                Just linkId ->
+                    linkId
+
+                Nothing ->
+                    ""
       , clickCount = Nothing
       , events = []
       , errorMsg = Nothing
@@ -67,7 +83,9 @@ init url key =
     )
 
 
+
 -- UPDATE
+
 
 type Msg
     = UpdateLinkId String
@@ -77,6 +95,7 @@ type Msg
     | UrlChanged Url
     | LinkClicked Browser.UrlRequest
     | NoOp
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -105,10 +124,11 @@ update msg model =
 
         UrlChanged url ->
             case extractSearchArgument "id" url of
-              Just linkId ->
-                ( { model | linkId = linkId }, Cmd.none )
-              Nothing ->
-                ( model, Cmd.none )
+                Just linkId ->
+                    ( { model | linkId = linkId }, Cmd.none )
+
+                Nothing ->
+                    ( model, Cmd.none )
 
         LinkClicked _ ->
             ( model, Cmd.none )
@@ -116,45 +136,51 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
+
 extractSearchArgument : String -> Url -> Maybe String
 extractSearchArgument key location =
-  { location | path = "" }
-    |> Url.Parser.parse (Url.Parser.query (Url.Parser.Query.string key))
-    |> Maybe.withDefault Nothing
+    { location | path = "" }
+        |> Url.Parser.parse (Url.Parser.query (Url.Parser.Query.string key))
+        |> Maybe.withDefault Nothing
+
+
 
 -- VIEW
 
+
 view : Model -> Browser.Document Msg
-view model = 
-  { title = "LinkStand | Manage"
-  , body = 
-    [ div [ class "container" ]
-        [ h1 [] [ text "Link Stats" ]
-        , input [ type_ "text", placeholder "Enter Link ID", value model.linkId, onInput UpdateLinkId ] []
-        , button [ onClick FetchStats ] [ text "Get Stats" ]
-        , case model.clickCount of
-            Just count ->
-                p [] [ text ("Click count: " ++ String.fromInt count) ]
+view model =
+    { title = "LinkStand | Manage"
+    , body =
+        [ div [ class "container" ]
+            [ h1 [] [ text "Link Stats" ]
+            , input [ type_ "text", placeholder "Enter Link ID", value model.linkId, onInput UpdateLinkId ] []
+            , button [ onClick FetchStats ] [ text "Get Stats" ]
+            , case model.clickCount of
+                Just count ->
+                    p [] [ text ("Click count: " ++ String.fromInt count) ]
 
-            Nothing ->
-                text ""
-        , if not (List.isEmpty model.events) then
-            table []
-                [ tr [] [ th [] [ text "ID" ], th [] [ text "IP" ], th [] [ text "Timestamp" ] ]
-                , List.map eventRow model.events |> Html.ul []
-                ]
-          else
-            text ""
-        , case model.errorMsg of
-            Just msg ->
-                p [ class "error" ] [ text msg ]
+                Nothing ->
+                    text ""
+            , if not (List.isEmpty model.events) then
+                table []
+                    [ tr [] [ th [] [ text "ID" ], th [] [ text "IP" ], th [] [ text "Timestamp" ] ]
+                    , List.map eventRow model.events |> Html.ul []
+                    ]
 
-            Nothing ->
+              else
                 text ""
-        , a [ class "d-block mt-4", href "/" ] [ text "Back" ]
+            , case model.errorMsg of
+                Just msg ->
+                    p [ class "error" ] [ text msg ]
+
+                Nothing ->
+                    text ""
+            , a [ class "d-block mt-4", href "/" ] [ text "Back" ]
+            ]
         ]
-    ]
-  }
+    }
+
 
 eventRow : Event -> Html Msg
 eventRow event =
@@ -164,7 +190,10 @@ eventRow event =
         , td [] [ text event.timestamp ]
         ]
 
+
+
 -- HTTP REQUEST
+
 
 fetchClickCount : String -> Cmd Msg
 fetchClickCount linkId =
@@ -172,6 +201,7 @@ fetchClickCount linkId =
         { url = host ++ "clicks?id=" ++ linkId
         , expect = Http.expectJson ReceiveClickCount clickCountDecoder
         }
+
 
 fetchEvents : String -> Cmd Msg
 fetchEvents linkId =
