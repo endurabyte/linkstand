@@ -1,4 +1,4 @@
-module Main exposing (..)
+module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
@@ -16,12 +16,10 @@ import Url.Parser.Query as Query
 
 
 
---host = "http://localhost:8080/"
---host = "https://linkstand.fly.dev/"
-
-
 host =
-    "https://api.linkstand.net/"
+    --"https://linkstand.fly.dev/"
+    --"https://api.linkstand.net/"
+    "http://localhost:8080/"
 
 
 
@@ -109,6 +107,10 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
+    let
+        _ = Log.log "Main.update: " msg
+        _ = Log.log "Main.update: " model
+    in
     case msg of
         UpdateUrlInput newUrl ->
             ( { model | urlInput = newUrl, errorMsg = Nothing }, Cmd.none )
@@ -136,19 +138,29 @@ update msg model =
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
-                    -- ( Log.log "internal" model, Cmd.none )
+                    -- ( model, Cmd.none )
                     ( model, Nav.pushUrl model.key (Url.toString url) )
 
                 Browser.External href ->
-                    -- ( Log.log "external" model, Cmd.none )
+                    -- ( model, Cmd.none )
                     ( model, Nav.load href )
 
         UrlChanged url ->
-            Log.log "UrlChanged" stepUrl url model
+            stepUrl url model
 
-        ManageMsg _ ->
-            ( model, Cmd.none )
+        ManageMsg manageMsg ->
+            case model.page of
+                About aboutModel ->
+                    ( model, Cmd.none )
 
+                Manage manageModel ->
+                    let
+                        ( updatedManageModel, manageCmd ) = Page.Manage.update manageMsg manageModel
+                    in
+                    ( { model | page = Manage updatedManageModel }, Cmd.map ManageMsg manageCmd )
+  
+                Main ->
+                    ( model, Cmd.none )
 
 
 -- VIEW
@@ -164,9 +176,8 @@ view model =
 
         Manage manage ->
             Log.log "manage"
-                Page.Manage.view
-                manage
-                |> mapDocument ManageMsg
+                Page.Manage.view manage
+                  |> mapDocument ManageMsg
 
         Main ->
             getBody model
@@ -247,9 +258,7 @@ navigateTo model url =
     Log.log ("navigateTo: " ++ url)
         -- Cmd.none
         -- Nav.load url
-        Nav.pushUrl
-        model.key
-        url
+        Nav.pushUrl model.key url
 
 
 
