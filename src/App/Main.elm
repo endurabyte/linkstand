@@ -7,6 +7,7 @@ import Html.Attributes exposing (..)
 import Html.Events
 import Http
 import Json.Decode as Decode
+import Log
 import Page.About
 import Page.Manage
 import Url
@@ -135,15 +136,15 @@ update msg model =
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
-                    -- ( Debug.log "internal" model, Cmd.none )
-                    ( Debug.log "internal" model, Nav.pushUrl model.key (Url.toString url) )
+                    -- ( Log.log "internal" model, Cmd.none )
+                    ( model, Nav.pushUrl model.key (Url.toString url) )
 
                 Browser.External href ->
-                    -- ( Debug.log "external" model, Cmd.none )
-                    ( Debug.log "external" model, Nav.load href )
+                    -- ( Log.log "external" model, Cmd.none )
+                    ( model, Nav.load href )
 
         UrlChanged url ->
-            Debug.log "UrlChanged" stepUrl url model
+            Log.log "UrlChanged" stepUrl url model
 
         ManageMsg _ ->
             ( model, Cmd.none )
@@ -157,12 +158,12 @@ view : Model -> Browser.Document Msg
 view model =
     case model.page of
         About about ->
-            Debug.log "about"
+            Log.log "about"
                 Page.About.view
                 about
 
         Manage manage ->
-            Debug.log "manage"
+            Log.log "manage"
                 Page.Manage.view
                 manage
                 |> mapDocument ManageMsg
@@ -243,7 +244,7 @@ submitUrl url aliasType =
 
 navigateTo : Model -> String -> Cmd Msg
 navigateTo model url =
-    Debug.log ("navigateTo: " ++ url)
+    Log.log ("navigateTo: " ++ url)
         -- Cmd.none
         -- Nav.load url
         Nav.pushUrl

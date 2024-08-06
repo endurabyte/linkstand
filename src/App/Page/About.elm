@@ -9,6 +9,7 @@ module Page.About exposing
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Log
 
 
 
@@ -49,14 +50,14 @@ update msg model =
 
 view : Model -> Browser.Document msg
 view model =
-    --Debug.log "Page.About.view"
-    { title = "LinkStand | About"
-    , body =
-        [ div [ class "container" ]
-            [ h1 [] [ text "About" ]
-            , p [] [ text "LinkStand is a web service to share URLs and track their use." ]
-            , a [ href "https://github.com/endurabyte/linkstand/" ] [ text "Source Code" ]
-            , a [ class "d-block mt-4", href "/" ] [ text "Back" ]
+    Log.log "Page.About.view"
+        { title = "LinkStand | About"
+        , body =
+            [ div [ class "container" ]
+                [ h1 [] [ text "About" ]
+                , p [] [ text "LinkStand is a web service to share URLs and track their use." ]
+                , a [ href "https://github.com/endurabyte/linkstand/" ] [ text "Source Code" ]
+                , a [ class "d-block mt-4", href "/" ] [ text "Back" ]
+                ]
             ]
-        ]
-    }
+        }
