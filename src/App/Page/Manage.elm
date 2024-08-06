@@ -13,19 +13,17 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
 import Json.Decode as Decode exposing (string)
+import Log
 import Url exposing (Url)
 import Url.Parser exposing (Parser, map)
 import Url.Parser.Query
 
 
 
---host = "http://localhost:8080/"
---host = "https://linkstand.fly.dev/"
-
-
-host : String
 host =
-    "https://api.linkstand.net/"
+    --"https://linkstand.fly.dev/"
+    --"https://api.linkstand.net/"
+    "http://localhost:8080/"
 
 
 
@@ -99,6 +97,10 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
+    let
+        _ = Log.log "Manage.update: msg = " msg
+        _ = Log.log "Manage.update: model = " model
+    in
     case msg of
         UpdateLinkId newLinkId ->
             ( { model | linkId = newLinkId, errorMsg = Nothing }, Cmd.none )
@@ -123,12 +125,12 @@ update msg model =
                     ( { model | errorMsg = Just "Failed to get events." }, Cmd.none )
 
         UrlChanged url ->
-            case extractSearchArgument "id" url of
-                Just linkId ->
-                    ( { model | linkId = linkId }, Cmd.none )
+              case extractSearchArgument "id" url of
+                  Just linkId ->
+                      ( { model | linkId = linkId }, Cmd.none )
 
-                Nothing ->
-                    ( model, Cmd.none )
+                  Nothing ->
+                      ( model, Cmd.none )
 
         LinkClicked _ ->
             ( model, Cmd.none )
@@ -197,7 +199,7 @@ eventRow event =
 
 fetchClickCount : String -> Cmd Msg
 fetchClickCount linkId =
-    Http.get
+        Http.get
         { url = host ++ "clicks?id=" ++ linkId
         , expect = Http.expectJson ReceiveClickCount clickCountDecoder
         }
