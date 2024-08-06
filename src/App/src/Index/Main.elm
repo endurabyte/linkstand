@@ -7,14 +7,16 @@ import Html.Attributes exposing (..)
 import Html.Events
 import Http
 import Json.Decode as Decode exposing (string)
-import Url
-import Url.Parser as Parser exposing (Parser, custom, oneOf, s, top)
+import Url exposing (Url)
+import Url.Parser as Parser exposing (Parser, (</>), (<?>), custom, oneOf, s, top)
+import Url.Parser.Query as Query
 
 import Page.About
+import Page.Manage
 
-host = "http://localhost:8080/"
+--host = "http://localhost:8080/"
 --host = "https://linkstand.fly.dev/"
---host = "https://api.linkstand.net/"
+host = "https://api.linkstand.net/"
 
 -- MAIN
 
@@ -28,7 +30,6 @@ main =
       , onUrlChange = UrlChanged
       , onUrlRequest = LinkClicked
       }
-
 
 -- MODEL
 
@@ -49,6 +50,7 @@ type alias AliasResponse =
 type Page
   = Main
   | About Page.About.Model
+  | Manage Page.Manage.Model
 
 -- JSON DECODERS
 
@@ -83,6 +85,7 @@ type Msg
     | NavigateToManage
     | UrlChanged Url.Url
     | LinkClicked Browser.UrlRequest
+    | ManageMsg Page.Manage.Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -108,18 +111,23 @@ update msg model =
                     ( { model | errorMsg = Just "Failed to create link." }, Cmd.none )
 
         NavigateToManage ->
-            ( model, navigateTo ("manage.html?id=" ++ model.aliasUrl) )
+            ( model, navigateTo model ("/manage?id=" ++ model.aliasUrl) )
 
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
-                    ( model, Nav.pushUrl model.key (Url.toString url) )
+                    -- ( Debug.log "internal" model, Cmd.none )
+                    ( Debug.log "internal" model, Nav.pushUrl model.key (Url.toString url) )
 
                 Browser.External href ->
-                    ( model, Nav.load href )
+                    -- ( Debug.log "external" model, Cmd.none )
+                    ( Debug.log "external" model, Nav.load href )
 
         UrlChanged url ->
-            stepUrl url model
+            Debug.log "UrlChanged" stepUrl url model
+
+        ManageMsg _ ->
+            ( model, Cmd.none )
 
 -- VIEW
 
@@ -127,10 +135,22 @@ view : Model -> Browser.Document Msg
 view model =
   case model.page of 
     About about ->
+      Debug.log "about" 
       Page.About.view about
+
+    Manage manage ->
+      Debug.log "manage"
+      Page.Manage.view manage
+        |> mapDocument ManageMsg
 
     Main -> 
       getBody model
+
+mapDocument : (innerMsg -> outerMsg) -> Browser.Document innerMsg -> Browser.Document outerMsg
+mapDocument mapMsg doc =
+    { title = doc.title
+    , body = List.map (Html.map mapMsg) doc.body
+    }
 
 getBody : Model -> Browser.Document Msg
 getBody model = 
@@ -190,9 +210,12 @@ submitUrl url aliasType =
         , expect = Http.expectJson ReceiveResponse aliasDecoder
         }
 
-navigateTo : String -> Cmd Msg
-navigateTo url =
-    Nav.load url
+navigateTo : Model -> String -> Cmd Msg
+navigateTo model url =
+    Debug.log ("navigateTo: " ++ url)
+    -- Cmd.none
+    -- Nav.load url
+    Nav.pushUrl model.key url
 
 
 -- ROUTER
@@ -207,6 +230,14 @@ stepUrl url model =
 
         , route (Parser.s "about")
           (stepAbout model Page.About.init)
+
+        , route (Parser.s "manage" <?> Query.string "id")
+          (\maybeId -> 
+            let 
+              manageInit = Page.Manage.init url model.key
+            in
+            stepManage model manageInit
+          )
         ]
   in
   case Parser.parse parser url of
@@ -222,14 +253,13 @@ stepMain model =
   ( { model | page = Main }, Cmd.none )
 
 stepAbout : Model -> ( Page.About.Model, Cmd Page.About.Msg ) -> ( Model, Cmd Msg )
-stepAbout model (html, cmds) =
-  ( { model | page = About html }, Cmd.none)
+stepAbout model (otherModel, cmd) =
+  ( { model | page = About otherModel }, Cmd.none)
+
+stepManage : Model -> ( Page.Manage.Model, Cmd Page.Manage.Msg ) -> ( Model, Cmd Msg )
+stepManage model (otherModel, cmd) =
+  ( { model | page = Manage otherModel }, Cmd.none)
 
 route : Parser a b -> a -> Parser (b -> c) c
 route parser handler =
   Parser.map handler parser
-
-
-about_ : Parser (String -> a) a
-about_ =
-  custom "about" Just
