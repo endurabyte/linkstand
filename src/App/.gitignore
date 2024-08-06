@@ -2,5 +2,5 @@
 .idea
 .DS_Store
 dist
-tmp
 elm-stuff
+index.js

@@ -31,7 +31,7 @@ jobs:
           elm-version: 0.19.1
 
       - name: Build
-        run: .\make.ps1
+        run: .\make.ps1 release
         shell: pwsh
         working-directory: 'src/App'
         
