@@ -40,7 +40,7 @@ update msg model =
 
 view : Model -> Browser.Document msg
 view model =
-  Debug.log("about: view")
+  --Debug.log "Page.About.view"
   { title = "LinkStand | About"
   , body = 
     [ div [ class "container" ]
